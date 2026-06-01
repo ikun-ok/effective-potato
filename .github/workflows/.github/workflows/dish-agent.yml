@@ -2,6 +2,14 @@ name: 菜品热量分析智能体
 on:
   issues:
     types: [opened, edited]
+  issue_comment:
+    types: [created, edited]
+
+# ↓↓↓ 这里就是要加的权限配置 ↓↓↓
+permissions:
+  issues: write
+  contents: read
+# ↑↑↑ 权限配置加在这里，紧挨着 on: 下面 ↑↑↑
 
 jobs:
   recognize-dish:
