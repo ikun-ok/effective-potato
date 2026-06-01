@@ -14,14 +14,24 @@ repo = g.get_repo(REPO_NAME)
 issue = repo.get_issue(number=int(ISSUE_NUMBER))
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# --- 步骤1：从Issue中提取图片URL ---
-def get_image_url(issue_body):
+# --- 步骤1：从Issue或评论中提取图片URL ---
+def get_image_url(issue_body, comments):
+    # 先检查Issue主体
     lines = issue_body.split("\n")
     for line in lines:
         if "![](" in line:
             return line.split("![](")[1].split(")")[0]
         if line.startswith("http") and any(ext in line for ext in [".png", ".jpg", ".jpeg", ".webp"]):
             return line
+    # 再检查所有评论
+    for comment in comments:
+        body = comment.body or ""
+        lines = body.split("\n")
+        for line in lines:
+            if "![](" in line:
+                return line.split("![](")[1].split(")")[0]
+            if line.startswith("http") and any(ext in line for ext in [".png", ".jpg", ".jpeg", ".webp"]):
+                return line
     return None
 
 # --- 步骤2：调用GPT-4o识别菜品并分析热量 ---
@@ -58,12 +68,14 @@ def analyze_dish_with_nutrition(image_url):
 
 # --- 主流程 ---
 if __name__ == "__main__":
-    print("收到新Issue，开始处理...")
+    print("收到新Issue/评论，开始处理...")
+    # 收集Issue主体和所有评论
     issue_body = issue.body or ""
-    image_url = get_image_url(issue_body)
+    comments = list(issue.get_comments())
+    image_url = get_image_url(issue_body, comments)
 
     if not image_url:
-        issue.create_comment("❌ 未在Issue中找到图片，请重新上传菜品图片~")
+        issue.create_comment("❌ 未在Issue或评论中找到图片，请重新上传菜品图片~")
         exit()
 
     try:
