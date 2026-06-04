@@ -1,22 +1,21 @@
 import base64
 import requests
 
-# 你的通义密钥
 QWEN_KEY = "sk-9e13e1949f1f4ce1a957837ac0c539bc"
 
-# 菜品图片识别
+# 菜品识图（使用你账号自带的VL识图模型）
 def analyze_dish(img_base64):
     api_key = QWEN_KEY
     url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     prompt = """
-你是专业美食营养师，识别图片里的菜品，严格固定三行返回，禁止多余内容：
+你是专业美食营养师，识别图片菜品，严格只三行，无多余文字：
 菜名：XXX
 食材：XXX
 热量：数字 kcal
 """
     req_data = {
-        "model": "qwen-plus-latest",
+        "model": "qwen3-vl-235b-a22b-thinking",
         "messages": [
             {
                 "role": "user",
@@ -29,10 +28,11 @@ def analyze_dish(img_base64):
     }
     resp = requests.post(url, headers=headers, json=req_data)
     json_res = resp.json()
+    # 打印报错内容，方便查看
+    print(json_res)
     content = json_res["output"]["choices"][0]["message"]["content"][0]["text"]
     return content
 
-# 页面调用入口
 def food_agent_run(img_file):
     byte_data = img_file.read()
     b64_str = base64.b64encode(byte_data).decode()
@@ -42,12 +42,12 @@ def food_agent_run(img_file):
     cal = txt.split("热量：")[1].replace("kcal", "").strip()
     return {"name": name, "material": material, "cal": cal}
 
-# AI健康问答
+# 健康问答
 def health_chat_answer(question):
     api_key = QWEN_KEY
     url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    prompt = f"你是私人健康营养师，精简回答饮食、运动、睡眠问题：{question}"
+    prompt = f"营养师，简短回答健康问题：{question}"
     req_data = {
         "model": "qwen3.7-plus",
         "messages": [{"role": "user", "content": prompt}]
