@@ -9,7 +9,7 @@ REPO_NAME = os.getenv("GITHUB_REPOSITORY")
 ISSUE_NUMBER = os.getenv("ISSUE_NUMBER")
 
 g = Github(GITHUB_TOKEN)
-repo = g.get_repo(REPO_NAME)
+
 issue = repo.get_issue(number=int(ISSUE_NUMBER))
 client = OpenAI(api_key=OPENAI_API_KEY)
 
