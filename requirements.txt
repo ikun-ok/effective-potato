@@ -2,3 +2,7 @@ openai>=1.0
 PyGithub>=2.1
 python-dotenv>=1.0
 requests>=2.31
+streamlit
+requests
+pillow
+pandas
