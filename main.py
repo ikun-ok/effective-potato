@@ -5,7 +5,7 @@ import streamlit as st
 def get_qwen_key():
     return st.secrets["QWEN_KEY"]
 
-# 菜品识图分析
+# 菜品识图
 def analyze_dish(img_base64):
     api_key = get_qwen_key()
     url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
@@ -29,10 +29,11 @@ def analyze_dish(img_base64):
         ]
     }
     res = requests.post(url, headers=headers, json=data)
-    result_text = res.json()["output"]["choices"][0]["message"]["content"][0]["text"]
+    json_data = res.json()
+    # 兼容返回结构
+    result_text = json_data["output"]["choices"][0]["message"]["content"][0]["text"]
     return result_text
 
-# 网页上传图片调用入口
 def food_agent_run(img_file):
     img_bytes = img_file.read()
     b64_code = base64.b64encode(img_bytes).decode()
@@ -46,7 +47,7 @@ def food_agent_run(img_file):
         "cal": cal_num
     }
 
-# AI健康问答
+# 健康问答
 def health_chat_answer(question):
     api_key = get_qwen_key()
     url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
@@ -59,4 +60,5 @@ def health_chat_answer(question):
         "messages": [{"role": "user", "content": prompt}]
     }
     res = requests.post(url, headers=headers, json=data)
-    return res.json()["output"]["text"]
+    json_data = res.json()
+    return json_data["output"]["text"]
